@@ -17,6 +17,9 @@
 
     var listeners = [];
 
+    var isRequesting = false;
+    var requestQueue = [];
+
     function checkRule(requestRule) {
         if (!requestRule) {
             return level > 0;
@@ -51,13 +54,20 @@
                 if (checkRule(requestRule)) {
                     return callback;
                 } else {
-                    return config[level].request.bind(null,
-                        function (err, result) {
-                            if (!err) {
-                                guard.setLevel(level + 1);
+                    return function () {
+                        requestQueue.push(callback);
+                        if (isRequesting) {
+                            return;
+                        } else {
+                            isRequesting = true;
+                        }
+                        config[level].request(function (err, result) {
+                            isRequesting = false;
+                            while (requestQueue.length) {
+                                requestQueue.shift()(err, result);
                             }
-                            guard(requestRule)(arguments[0]);
                         });
+                    };
                 }
             }
             if (arguments.length === 2) {
