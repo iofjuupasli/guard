@@ -8,65 +8,88 @@
     }
 }(this, function () {
     var level = 0;
-    var config = null;
+
+    var config = [{
+        allowed: []
+    }, {
+        allowed: [/.*/]
+    }];
+
     var listeners = [];
 
-    var guard = function guard() {
-        if (config === null) {
-            throw new Error('config wasnt set');
+    function checkRule(requestRule) {
+        if (!requestRule) {
+            return level > 0;
         }
-        if (arguments.length === 0) {
-            return config[level].request(function (err, result) {
-                if (!err) {
-                    guard.setLevel(level + 1);
+        return (function () {
+            for (var i = 0; i <= level; i++) {
+                var rules = config[i].allowed;
+                for (var j = 0; j < rules.length; j++) {
+                    if (rules[j].test(requestRule)) {
+                        return true;
+                    }
                 }
-            });
-        }
-        if (arguments.length === 1) {
-            return guard(arguments[0], true, false);
-        }
-        if (arguments.length === 2) {
-            var callback = arguments[1];
-            return guard(arguments[0],
-                callback,
-                config[level].request.bind(null, function (err, result) {
+            }
+            return false;
+        }());
+    }
+
+    var guard = function guard(requestRule) {
+        return function () {
+            if (arguments.length === 0) {
+                if (requestRule) {
+                    return checkRule(requestRule);
+                }
+                return config[level].request(function (err, result) {
                     if (!err) {
                         guard.setLevel(level + 1);
                     }
-                    if (callback) {
-                        callback(err, result);
-                    }
-                }));
-        }
-        if (arguments.length === 3) {
-            var requestRule = arguments[0];
-            var isAllowed = (function () {
-                for (var i = 0; i <= level; i++) {
-                    var rules = config[i].allowed;
-                    for (var j = 0; j < rules.length; j++) {
-                        var rule = rules[j];
-                        if (rule.test(requestRule)) {
-                            return true;
-                        }
-                    }
+                });
+            }
+            if (arguments.length === 1) {
+                var callback = arguments[0];
+                if (checkRule(requestRule)) {
+                    return callback;
+                } else {
+                    return config[level].request.bind(null,
+                        function (err, result) {
+                            if (!err) {
+                                guard.setLevel(level + 1);
+                            }
+                            if (callback) {
+                                callback(err, result);
+                            }
+                        });
                 }
-            }());
-            return isAllowed ? arguments[1] : arguments[2];
-        }
+            }
+            if (arguments.length === 2) {
+                return checkRule(requestRule) ? arguments[0] : arguments[1];
+            }
+        };
     };
 
     guard.setup = function (newConfig) {
-        config = newConfig.map(function (val) {
-            return {
-                allowed: val.allowed.map(function (rule) {
-                    if (rule instanceof RegExp) {
-                        return rule;
-                    }
-                    return new RegExp('^' + rule.replace('*', '.*') + '$');
-                }),
-                request: val.request
-            };
-        });
+        if (typeof newConfig === 'function') {
+            config = [{
+                allowed: [],
+                request: newConfig
+            }, {
+                allowed: [/.*/]
+            }];
+        } else {
+            config = newConfig.map(function (val) {
+                return {
+                    allowed: val.allowed.map(function (rule) {
+                        if (rule instanceof RegExp) {
+                            return rule;
+                        }
+                        return new RegExp('^' + rule.replace('*', '.*') + '$');
+                    }),
+                    request: val.request
+                };
+            });
+        }
+        return config;
     };
 
     guard.setLevel = function (newLevel) {
