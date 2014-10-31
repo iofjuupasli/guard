@@ -56,9 +56,7 @@
                             if (!err) {
                                 guard.setLevel(level + 1);
                             }
-                            if (callback) {
-                                callback(err, result);
-                            }
+                            guard(requestRule)(arguments[0]);
                         });
                 }
             }
