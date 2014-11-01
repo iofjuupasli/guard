@@ -1,3 +1,6 @@
+[![Coverage Status](https://img.shields.io/coveralls/iofjuupasli/guard.svg)](https://coveralls.io/r/iofjuupasli/guard?branch=master)
+[![Build Status](https://travis-ci.org/iofjuupasli/guard.svg?branch=master)](https://travis-ci.org/iofjuupasli/guard)
+
 guard
 =====
 
