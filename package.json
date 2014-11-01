@@ -1,0 +1,28 @@
+{
+  "name": "guard",
+  "version": "0.0.0",
+  "description": "Utility to split opportunities by the account level (free\\pro\\enterprise\\etc.) for frontend and node",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "istanbul test _mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iofjuupasli/guard.git"
+  },
+  "author": "Tretyak Valery <iofjuupasli@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/iofjuupasli/guard/issues"
+  },
+  "homepage": "https://github.com/iofjuupasli/guard",
+  "dependencies": {
+    "chai": "^1.9.2",
+    "chai-spies": "^0.5.1",
+    "istanbul": "^0.3.2",
+    "mocha": "^2.0.1"
+  }
+}
