@@ -5,7 +5,7 @@
     } else if (typeof exports === 'object') {
         module.exports = factory();
     } else {
-        root.guard = factory();
+        root.Guard = factory();
     }
 }(this, function () {
     return function () {
@@ -18,7 +18,19 @@
         var isRequesting = false;
         var requestQueue = [];
 
-        function checkRule(requestRule) {
+        var _ = {
+            isFunction: function (value) {
+                return typeof value == 'function';
+            },
+            isArray: function (value) {
+                return Array.isArray(value);
+            },
+            isRegExp: function (value) {
+                return value instanceof RegExp;
+            }
+        };
+
+        function checkAccess(requestRule) {
             if (!requestRule) {
                 return level > 0;
             }
@@ -35,59 +47,80 @@
             }());
         }
 
-        var guard = function guard(requestRule) {
+        function reqThenCallback(feature, callback) {
             return function () {
-                if (arguments.length === 0) {
-                    if (requestRule) {
-                        return checkRule(requestRule);
-                    }
-                    return config[level].request(function (err, result) {
-                        if (!err) {
-                            guard.setLevel(level + 1);
+                var args = arguments;
+                requestQueue.push(callback);
+                if (isRequesting) {
+                    return;
+                } else {
+                    isRequesting = true;
+                }
+                config[level].request(function () {
+                    guard.setLevel(level + 1);
+                    isRequesting = false;
+                    while (requestQueue.length) {
+                        if (feature) {
+                            guard(feature, requestQueue.shift())
+                                .apply(null, args);
+                        } else {
+                            guard(requestQueue.shift()).apply(null, args);
                         }
-                    });
-                }
-                if (arguments.length === 1) {
-                    var callback = arguments[0];
-                    if (checkRule(requestRule)) {
-                        return callback;
-                    } else {
-                        return function () {
-                            requestQueue.push(callback);
-                            if (isRequesting) {
-                                return;
-                            } else {
-                                isRequesting = true;
-                            }
-                            config[level].request(function (err, result) {
-                                isRequesting = false;
-                                while (requestQueue.length) {
-                                    requestQueue.shift()(err, result);
-                                }
-                            });
-                        };
                     }
-                }
-                if (arguments.length === 2) {
-                    return checkRule(requestRule) ? arguments[0] : arguments[1];
-                }
-                throw new Error('guard support only 0, 1 or 2 arguments');
+                });
             };
+        }
+
+        var guard = function guard() {
+            if (arguments.length === 0) {
+                return checkAccess();
+            }
+            if (arguments.length === 1) {
+                if (_.isFunction(arguments[0])) {
+                    if (checkAccess()){
+                        return arguments[0];
+                    } else {
+                        return reqThenCallback(null, arguments[0]);
+                    }
+                } else {
+                    return checkAccess(arguments[0]);
+                }
+            }
+            if (arguments.length === 2) {
+                if (!_.isFunction(arguments[1])) {
+                    throw new TypeError;
+                }
+                if (checkAccess(arguments[0])) {
+                    return arguments[1];
+                } else {
+                    return reqThenCallback(arguments[0], arguments[1]);
+                }
+            }
+        };
+
+        guard.request = function (callback) {
+            if (callback && !_.isFunction(callback)) {
+                throw new TypeError;
+            }
+            if (!callback) {
+                callback = function () {};
+            }
+            return reqThenCallback(null, callback)();
         };
 
         guard.setup = function (newConfig) {
-            if (typeof newConfig === 'function') {
+            if (_.isFunction(newConfig)) {
                 config = [{
                     allowed: [],
                     request: newConfig
                 }, {
                     allowed: [/.*/]
                 }];
-            } else if (newConfig) {
+            } else if (_.isArray(newConfig)) {
                 config = newConfig.map(function (val) {
                     return {
                         allowed: val.allowed.map(function (rule) {
-                            if (rule instanceof RegExp) {
+                            if (_.isRegExp(rule)) {
                                 return rule;
                             }
                             return new RegExp('^' + rule.replace('*', '.*') + '$');
