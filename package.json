@@ -1,8 +1,17 @@
 {
-  "name": "guard",
-  "version": "0.0.0",
+  "name": "guard-bit",
+  "version": "1.0.0",
   "description": "Utility to split opportunities by the account level (free\\pro\\enterprise\\etc.) for frontend and node",
   "main": "index.js",
+  "keywords": [
+    "access",
+    "control",
+    "acl",
+    "guard",
+    "auth",
+    "authorized",
+    "unauthorized"
+  ],
   "directories": {
     "test": "test"
   },

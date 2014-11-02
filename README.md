@@ -259,3 +259,8 @@ declare module "guard" {
 declare var Guard : GuardConstructor;
 
 ```
+
+Versions
+==================
+It uses semver.
+Current version is 1.x.x. It means that API is stable. Whooa!

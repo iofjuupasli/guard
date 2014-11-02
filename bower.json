@@ -1,0 +1,32 @@
+{
+  "name": "guard",
+  "description": "Utility to split opportunities by the account level (free\\pro\\enterprise\\etc.) for frontend and node",
+  "main": "index.js",
+  "version": "1.0.0",
+  "homepage": "https://github.com/iofjuupasli/guard",
+  "authors": [
+    "iofjuupasli <iofjuupasli@gmail.com>"
+  ],
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "access",
+    "control",
+    "acl",
+    "guard",
+    "auth",
+    "authorized",
+    "unauthorized"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
