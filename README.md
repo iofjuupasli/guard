@@ -37,5 +37,41 @@ As middleware
 
 ```
 
-API
+API (TypeScript)
 ===============
+
+```typescript
+interface Guard {
+    () : boolean;
+    (feature : string) : boolean;
+    (callback : (...any) => any) : (...any) => void;
+    (feature : string, callback : (...any) => any) : (...any) => void;
+
+    request() : void;
+    request(callback : (...any) => any);
+
+    setup() : void;
+    setup(req: (done: () => any) => any) : void;
+    setup(config: Array<{request?: (done: () => any) => any; allowed: Array<any>}>) : void;
+
+    getLevel() : number;
+    setLevel(level : number) : void;
+
+    listen(listener : (newLevel) => any) : () => void;
+}
+
+interface GuardConstructor {
+    () : Guard;
+    new () : Guard;
+    (req: (done: () => any) => any) : Guard;
+    new (req: (done: () => any) => any) : Guard;
+    (config: Array<{request?: (done: () => any) => any; allowed: Array<any>}>) : Guard;
+    new (config: Array<{request?: (done: () => any) => any; allowed: Array<any>}>) : Guard;
+}
+
+declare module "guard" {
+    export = Guard;
+}
+declare var Guard : GuardConstructor;
+
+```
