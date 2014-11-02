@@ -49,6 +49,9 @@
 
         function reqThenCallback(feature, callback) {
             return function () {
+                if (!config[level].request) {
+                    return;
+                }
                 var args = arguments;
                 requestQueue.push(callback);
                 if (isRequesting) {
@@ -77,7 +80,7 @@
             }
             if (arguments.length === 1) {
                 if (_.isFunction(arguments[0])) {
-                    if (checkAccess()){
+                    if (checkAccess()) {
                         return arguments[0];
                     } else {
                         return reqThenCallback(null, arguments[0]);

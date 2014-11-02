@@ -43,14 +43,27 @@ describe('guard', function () {
             guard.setLevel(1);
             guard().should.be.true;
         });
-        it('any rule should forbidden by default', function () {
+        it('with any rule should forbidden by default', function () {
             var guard = Guard();
             guard('anyRule').should.be.false;
         });
-        it('any rule should be allowed when authorized', function () {
+        it('with any rule should be allowed when authorized', function () {
             var guard = Guard();
             guard.setLevel(1);
             guard('anyRule').should.be.true;
+        });
+        it('should ignore callback on 0 level', function () {
+            var guard = Guard();
+            var spy = chai.spy(noop);
+            guard(spy)();
+            spy.should.have.not.been.called();
+        });
+        it('should call callback on > 0 level', function () {
+            var guard = Guard();
+            var spy = chai.spy(noop);
+            guard.setLevel(1);
+            guard(spy)();
+            spy.should.have.been.called.once;
         });
         it('should increase level when next level request success', function () {
             var requestSpy = chai.spy(successRequest);
