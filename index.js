@@ -59,9 +59,13 @@
                 } else {
                     isRequesting = true;
                 }
-                config[level].request(function () {
-                    guard.setLevel(level + 1);
+                config[level].request(function (err) {
                     isRequesting = false;
+                    if (err) {
+                        requestQueue = [];
+                        return;
+                    }
+                    guard.setLevel(level + 1);
                     while (requestQueue.length) {
                         if (feature) {
                             guard(feature, requestQueue.shift())

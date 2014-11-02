@@ -50,8 +50,13 @@ Request callback (unauth/auth)
 var guard = Guard(function (done) {
     // show there popup with login/register form
     // call done when you are logged in
+    // call done with error when you are closed popup with forms
     setTimeout(function () {
-        done();
+        if (confirm('Give access?')) {
+            done();
+        } else {
+            done('error');
+        }
     }, 100);
 });
 
@@ -89,6 +94,7 @@ guard('anyRule', function () {
     console.log('called!');
 })(); // 'called!'
 
+
 ```
 
 Several access level and rules (unauth/auth/pro/admin)
@@ -100,6 +106,8 @@ var guard = Guard([{
     request: function (done) {
         if (confirm('Are you a User?')) {
             done();
+        } else {
+            done('error');
         }
     }
 }, {
@@ -110,6 +118,8 @@ var guard = Guard([{
     request: function (done) {
         if (confirm('Are you an Admin?')) {
             done();
+        } else {
+            done('error');
         }
     }
 }, {
@@ -225,8 +235,8 @@ interface Guard {
     request(callback : (...any) => any);
 
     setup() : void;
-    setup(req: (done: () => any) => any) : void;
-    setup(config: Array<{request?: (done: () => any) => any; allowed: Array<any>}>) : void;
+    setup(req: (done: (error? : any) => any) => any) : void;
+    setup(config: Array<{request?: (done: (error? : any) => any) => any; allowed: Array<any>}>) : void;
 
     getLevel() : number;
     setLevel(level : number) : void;
@@ -237,10 +247,10 @@ interface Guard {
 interface GuardConstructor {
     () : Guard;
     new () : Guard;
-    (req: (done: () => any) => any) : Guard;
-    new (req: (done: () => any) => any) : Guard;
-    (config: Array<{request?: (done: () => any) => any; allowed: Array<any>}>) : Guard;
-    new (config: Array<{request?: (done: () => any) => any; allowed: Array<any>}>) : Guard;
+    (req: (done: (error? : any) => any) => any) : Guard;
+    new (req: (done: (error? : any) => any) => any) : Guard;
+    (config: Array<{request?: (done: (error? : any) => any) => any; allowed: Array<any>}>) : Guard;
+    new (config: Array<{request?: (done: (error? : any) => any) => any; allowed: Array<any>}>) : Guard;
 }
 
 declare module "guard" {

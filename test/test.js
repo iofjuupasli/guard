@@ -17,12 +17,12 @@ function asyncSuccess(done) {
 }
 
 function failRequest(done) {
-
+    done('error');
 }
 
 function asyncFail(done) {
     setTimeout(function () {
-
+        done('error');
     }, 0);
 }
 
