@@ -16,7 +16,8 @@
     "test": "test"
   },
   "scripts": {
-    "test": "istanbul test _mocha"
+    "test": "istanbul test _mocha",
+    "prepublish": "./node_modules/uglify-js/bin/uglifyjs index.js -o index.min.js"
   },
   "repository": {
     "type": "git",
@@ -28,12 +29,13 @@
     "url": "https://github.com/iofjuupasli/guard/issues"
   },
   "homepage": "https://github.com/iofjuupasli/guard",
-  "dependencies": {
+  "devDependencies": {
     "chai": "^1.9.2",
     "chai-spies": "^0.5.1",
     "coveralls": "^2.11.2",
     "istanbul": "^0.3.2",
     "mocha": "^2.0.1",
-    "mocha-lcov-reporter": "0.0.1"
+    "mocha-lcov-reporter": "0.0.1",
+    "uglify-js": "^2.4.15"
   }
 }

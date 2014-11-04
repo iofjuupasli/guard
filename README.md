@@ -6,6 +6,19 @@ guard
 
 Utility to split opportunities by the account level (free\pro\enterprise\etc.) for frontend and node
 
+Install
+=============
+### With bower
+```
+bower i -S guard
+```
+### With npm
+```
+npm i -S guard-bit
+```
+### File
+Save [index.min.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.1/index.min.js) or [index.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.1/index.js) to your assets folder
+
 Examples
 =============
 
