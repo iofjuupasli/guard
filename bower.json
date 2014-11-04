@@ -2,7 +2,7 @@
   "name": "guard",
   "description": "Utility to split opportunities by the account level (free\\pro\\enterprise\\etc.) for frontend and node",
   "main": "index.js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "homepage": "https://github.com/iofjuupasli/guard",
   "authors": [
     "iofjuupasli <iofjuupasli@gmail.com>"

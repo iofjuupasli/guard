@@ -1,6 +1,6 @@
 {
   "name": "guard-bit",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Utility to split opportunities by the account level (free\\pro\\enterprise\\etc.) for frontend and node",
   "main": "index.js",
   "keywords": [

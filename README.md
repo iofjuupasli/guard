@@ -17,7 +17,7 @@ bower i -S guard
 npm i -S guard-bit
 ```
 ### File
-Save [index.min.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.1/index.min.js) or [index.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.1/index.js) to your assets folder
+Save [index.min.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.2/index.min.js) or [index.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.2/index.js) to your assets folder
 
 Examples
 =============
