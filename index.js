@@ -1,13 +1,16 @@
 (function (root, factory) {
+    'use strict';
     /* istanbul ignore next */
     if (typeof define === 'function' && define.amd) {
         define([], factory);
     } else if (typeof exports === 'object') {
+        /* global module */
         module.exports = factory();
     } else {
         root.Guard = factory();
     }
 }(this, function () {
+    'use strict';
     return function () {
         var level = 0;
 
@@ -95,7 +98,7 @@
             }
             if (arguments.length === 2) {
                 if (!_.isFunction(arguments[1])) {
-                    throw new TypeError;
+                    throw new TypeError();
                 }
                 if (checkAccess(arguments[0])) {
                     return arguments[1];
@@ -107,7 +110,7 @@
 
         guard.request = function (callback) {
             if (callback && !_.isFunction(callback)) {
-                throw new TypeError;
+                throw new TypeError();
             }
             if (!callback) {
                 callback = function () {};
@@ -130,7 +133,8 @@
                             if (_.isRegExp(rule)) {
                                 return rule;
                             }
-                            return new RegExp('^' + rule.replace('*', '.*') + '$');
+                            var ruleNorm = '^' + rule.replace('*', '.*') + '$';
+                            return new RegExp(ruleNorm);
                         }),
                         request: val.request
                     };
