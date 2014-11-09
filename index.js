@@ -11,7 +11,7 @@
     }
 }(this, function () {
     'use strict';
-    return function () {
+    return function (initConfig) {
         var level = 0;
 
         var config;
@@ -161,13 +161,17 @@
         };
 
         guard.listen = function (listener) {
-            var length = listeners.push(listener);
-            return function (i) {
-                listeners.splice(i, 1);
-            }.bind(null, length - 1);
+            listeners.push(listener);
+            return function () {
+                var i = listeners.indexOf(listener);
+                if (i !== -1) {
+                    listeners.splice(i, 1);
+                }
+                listener = null;
+            };
         };
 
-        guard.setup(arguments[0]);
+        guard.setup(initConfig);
 
         return guard;
     };
