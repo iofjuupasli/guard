@@ -96,15 +96,13 @@
                     return checkAccess(arguments[0]);
                 }
             }
-            if (arguments.length === 2) {
-                if (!_.isFunction(arguments[1])) {
-                    throw new TypeError();
-                }
-                if (checkAccess(arguments[0])) {
-                    return arguments[1];
-                } else {
-                    return reqThenCallback(arguments[0], arguments[1]);
-                }
+            if (!_.isFunction(arguments[1])) {
+                throw new TypeError();
+            }
+            if (checkAccess(arguments[0])) {
+                return arguments[1];
+            } else {
+                return reqThenCallback(arguments[0], arguments[1]);
             }
         };
 

@@ -1,8 +1,11 @@
-/*jshint expr:true*/
+/*jshint expr:true, node:true*/
+/*global describe, it, beforeEach*/
+'use strict';
+
 var chai = require('chai');
 var spies = require('chai-spies');
 chai.use(spies);
-var should = chai.should();
+chai.should();
 
 var Guard = require('../index');
 
@@ -20,12 +23,6 @@ function failRequest(done) {
     done('error');
 }
 
-function asyncFail(done) {
-    setTimeout(function () {
-        done('error');
-    }, 0);
-}
-
 function noop() {}
 
 describe('guard', function () {
@@ -34,6 +31,175 @@ describe('guard', function () {
         Guard().should.exist;
     });
     describe('instance', function () {
+        function asWithoutConfig(config) {
+            var guard;
+            beforeEach(function () {
+                guard = Guard(config);
+            });
+            it('forbids by default', function () {
+                guard().should.be.false;
+            });
+            it('forbids any rule by default', function () {
+                guard('anyRule').should.be.false;
+            });
+            describe('when level setted >0', function () {
+                beforeEach(function () {
+                    guard.setLevel(1);
+                });
+                it('allows empty rule', function () {
+                    guard().should.be.true;
+                });
+                it('allows any rule', function () {
+                    guard('anyRule').should.be.true;
+                });
+                it('returns same handler', function () {
+                    guard(noop).should.equal(noop);
+                });
+                it('returns same handler for any rule', function () {
+                    guard('anyRule', noop).should.equal(noop);
+                });
+                it('returns handler with same signature', function () {
+                    var spy = chai.spy(noop);
+                    var arg = 'smth';
+                    guard(spy)(arg);
+                    spy.should.have.been.called.with(arg);
+                });
+            });
+        }
+        describe('w/o config', function () {
+            asWithoutConfig();
+        });
+        describe('with request fn config', function () {
+            describe('with success request', function () {
+                var guard, spy, requestSpy;
+                beforeEach(function () {
+                    requestSpy = chai.spy(successRequest);
+                    guard = Guard(requestSpy);
+                    spy = chai.spy(noop);
+                });
+                asWithoutConfig(successRequest);
+                it('allows and level increase when handler provided',
+                    function () {
+                        guard(spy)();
+                        guard.getLevel().should.equal(1);
+                        spy.should.have.been.called.once;
+                        requestSpy.should.have.been.called.once;
+                    });
+                it('returns handler that accept args as provided handler',
+                    function () {
+                        var arg = 'smth';
+                        guard(spy)(arg);
+                        spy.should.have.been.called.with(arg);
+                    });
+            });
+            describe('with fail request', function () {
+                var guard, spy, requestSpy;
+                beforeEach(function () {
+                    requestSpy = chai.spy(failRequest);
+                    guard = Guard(requestSpy);
+                    spy = chai.spy(noop);
+                });
+                asWithoutConfig(failRequest);
+                it('forbid with handler provided', function () {
+                    guard(spy)();
+                    guard.getLevel().should.equal(0);
+                    spy.should.have.not.been.called();
+                    requestSpy.should.have.been.called.once;
+                });
+            });
+            describe('with async success request', function () {
+                describe('when called with handler >1 times', function () {
+                    var guard, requestSpy, spy1, spy2;
+                    beforeEach(function (done) {
+                        requestSpy = chai.spy(function (requestDone) {
+                            setTimeout(function () {
+                                requestDone();
+                                done();
+                            }, 0);
+                        });
+                        guard = Guard(requestSpy);
+                        spy1 = chai.spy(noop);
+                        spy2 = chai.spy(noop);
+                        guard(spy1)();
+                        guard(spy2)();
+                    });
+                    it('calls request only once', function () {
+                        requestSpy.should.have.been.called.once;
+                    });
+                    it('calls all provided handler', function () {
+                        spy1.should.have.been.called.once;
+                        spy2.should.have.been.called.once;
+                    });
+                });
+            });
+        });
+        describe('with 2 levels config', function () {
+            var guard, levelZeroReqSpy, levelOneReqSpy, spy;
+            beforeEach(function () {
+                levelZeroReqSpy = chai.spy(successRequest);
+                levelOneReqSpy = chai.spy(successRequest);
+                guard = Guard([{
+                    allowed: ['zero'],
+                    request: levelZeroReqSpy
+                }, {
+                    allowed: ['one'],
+                    request: levelOneReqSpy
+                }, {
+                    allowed: ['*']
+                }]);
+                spy = chai.spy(noop);
+            });
+            describe('when on 0 level', function () {
+                it('allows rules on 0 level', function () {
+                    guard('zero').should.be.true;
+                });
+                it('request for 1 level when request for 1 level rule',
+                    function () {
+                        guard('one', spy)();
+                        levelZeroReqSpy.should.have.been.called.once;
+                        spy.should.have.been.called.once;
+                        levelOneReqSpy.should.not.have.been.called();
+                    });
+                it('request for 1 then 2 level when request for 2 level rule',
+                    function () {
+                        guard('two', spy)();
+                        levelZeroReqSpy.should.have.been.called.once;
+                        levelOneReqSpy.should.have.been.called.once;
+                        spy.should.have.been.called.once;
+                    });
+                it('forbids rules on >0 level', function () {
+                    guard('one').should.be.false;
+                    guard('two').should.be.false;
+                });
+            });
+            describe('when on 1 level', function () {
+                beforeEach(function () {
+                    guard.setLevel(1);
+                });
+                it('allows rules on 0 and 1 level', function () {
+                    guard('zero').should.be.true;
+                    guard('one').should.be.true;
+                });
+                it('request for 2 level when request for 2 level rule',
+                    function () {
+                        guard('two', spy)();
+                        levelZeroReqSpy.should.not.have.been.called();
+                        levelOneReqSpy.should.have.been.called.once;
+                        spy.should.have.been.called.once;
+                    });
+                it('forbids rules on >1 level', function () {
+                    guard('two').should.be.false;
+                });
+            });
+        });
+        describe('with invalid args', function () {
+            it('throws TypeError', function () {
+                var guard = Guard();
+                guard.bind(null, 'rule', 'invalidType').should.throw(TypeError);
+            });
+        });
+
+        /// OLD TESTS
         it('should forbid on 0 level w/o feature specified', function () {
             var guard = Guard();
             guard().should.be.false;
@@ -65,14 +231,15 @@ describe('guard', function () {
             guard(spy)();
             spy.should.have.been.called.once;
         });
-        it('should increase level when next level request success', function () {
-            var requestSpy = chai.spy(successRequest);
-            var guard = Guard(requestSpy);
-            guard.getLevel().should.equal(0);
-            guard.request();
-            requestSpy.should.have.been.called();
-            guard.getLevel().should.equal(1);
-        });
+        it('should increase level when next level request success',
+            function () {
+                var requestSpy = chai.spy(successRequest);
+                var guard = Guard(requestSpy);
+                guard.getLevel().should.equal(0);
+                guard.request();
+                requestSpy.should.have.been.called();
+                guard.getLevel().should.equal(1);
+            });
         it('should save level when next level request fails', function () {
             var requestSpy = chai.spy(failRequest);
             var guard = Guard(requestSpy);
@@ -112,20 +279,22 @@ describe('guard', function () {
             });
             guard(secondCallbackSpy)();
         });
-        it('should call request and then callback if feature not allowed', function () {
-            var requestSpy = chai.spy(successRequest);
-            var guard = Guard(requestSpy);
-            var spy = chai.spy(noop);
-            guard('check', spy)();
-            spy.should.have.been.called.once;
-            requestSpy.should.have.been.called.once;
-        });
+        it('should call request and then callback if feature not allowed',
+            function () {
+                var requestSpy = chai.spy(successRequest);
+                var guard = Guard(requestSpy);
+                var spy = chai.spy(noop);
+                guard('check', spy)();
+                spy.should.have.been.called.once;
+                requestSpy.should.have.been.called.once;
+            });
         it('should throw when args invalid', function () {
             var guard = Guard();
             guard.bind(null, 'anyRule', 'invalidType').should.throw(TypeError);
         });
         it('should ignore rest args', function () {
-            Guard(successRequest).bind(null, 'anyRule', noop, 'else').should.not.throw();
+            Guard(successRequest)
+                .bind(null, 'anyRule', noop, 'else').should.not.throw();
         });
         it('should call all request on path to private feature', function () {
             var firstRequest = chai.spy(successRequest);
@@ -178,10 +347,20 @@ describe('guard', function () {
             guard.setLevel(1);
             spy.should.have.not.been.called;
         });
+        it('should unsubscribe only once', function () {
+            var guard = Guard();
+            var spy = chai.spy(noop);
+            var unsubscribe = guard.listen(spy);
+            unsubscribe();
+            unsubscribe();
+            guard.setLevel(1);
+            spy.should.have.not.been.called;
+        });
     });
     describe('request', function () {
         it('should throw when invalid args', function () {
-            Guard().request.bind(null, 'shouldBeAFunction').should.throw(TypeError);
+            Guard().request
+                .bind(null, 'shouldBeAFunction').should.throw(TypeError);
         });
         it('should request then call callback', function () {
             var guard = Guard(successRequest);
@@ -190,5 +369,5 @@ describe('guard', function () {
             spy.should.have.been.called.once;
             guard.getLevel().should.equal(1);
         });
-    })
+    });
 });
