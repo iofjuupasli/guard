@@ -7,7 +7,7 @@ var spies = require('chai-spies');
 chai.use(spies);
 chai.should();
 
-var Guard = require('../index');
+var Guard = require('../guard');
 
 function successRequest(done) {
     done();

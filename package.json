@@ -1,8 +1,8 @@
 {
   "name": "guard-bit",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Utility to split opportunities by the account level (free\\pro\\enterprise\\etc.) for frontend and node",
-  "main": "index.js",
+  "main": "guard.js",
   "keywords": [
     "access",
     "control",
@@ -17,7 +17,7 @@
   },
   "scripts": {
     "test": "istanbul test _mocha",
-    "prepublish": "./node_modules/uglify-js/bin/uglifyjs index.js -o index.min.js"
+    "prepublish": "./node_modules/uglify-js/bin/uglifyjs guard.js -o guard.min.js"
   },
   "repository": {
     "type": "git",
