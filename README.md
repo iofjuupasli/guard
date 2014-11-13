@@ -17,7 +17,7 @@ bower i -S guard
 npm i -S guard-bit
 ```
 ### File
-Save [guard.min.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.3/guard.min.js) or [guard.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.3/guard.js) to your assets folder
+Save [guard.min.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.4/guard.min.js) or [guard.js](https://raw.githubusercontent.com/iofjuupasli/guard/v1.0.4/guard.js) to your assets folder
 
 Examples
 =============
@@ -151,7 +151,7 @@ guard(function (message) {
 // level === 1
 guard('@:profile:read', function () {
     console.log('My Profile');
-})(); // 'My Profile' immediately
+})(); // 'My Profile' immediately (but async)
 
 guard('adminFeature', function () {
     console.log('called!');

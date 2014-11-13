@@ -52,17 +52,23 @@
 
         function reqThenCallback(feature, callback) {
             return function () {
-                if (!config[level].request) {
+                var args = arguments;
+                if (checkAccess(feature)) {
+                    setTimeout(function () {
+                        callback.apply(null, args);
+                    }, 0);
                     return;
                 }
-                var args = arguments;
                 requestQueue.push(callback);
                 if (isRequesting) {
                     return;
-                } else {
-                    isRequesting = true;
                 }
-                config[level].request(function (err) {
+                isRequesting = true;
+                if (config[level].request) {
+                    config[level].request(requestHandler);
+                }
+
+                function requestHandler(err) {
                     isRequesting = false;
                     if (err) {
                         requestQueue = [];
@@ -70,14 +76,14 @@
                     }
                     guard.setLevel(level + 1);
                     while (requestQueue.length) {
-                        if (feature) {
-                            guard(feature, requestQueue.shift())
-                                .apply(null, args);
+                        var nextRequest = requestQueue.shift();
+                        if (feature != null) {
+                            guard(feature, nextRequest).apply(null, args);
                         } else {
-                            guard(requestQueue.shift()).apply(null, args);
+                            guard(nextRequest).apply(null, args);
                         }
                     }
-                });
+                }
             };
         }
 
@@ -87,11 +93,7 @@
             }
             if (arguments.length === 1) {
                 if (_.isFunction(arguments[0])) {
-                    if (checkAccess()) {
-                        return arguments[0];
-                    } else {
-                        return reqThenCallback(null, arguments[0]);
-                    }
+                    return reqThenCallback(null, arguments[0]);
                 } else {
                     return checkAccess(arguments[0]);
                 }
@@ -99,11 +101,7 @@
             if (!_.isFunction(arguments[1])) {
                 throw new TypeError();
             }
-            if (checkAccess(arguments[0])) {
-                return arguments[1];
-            } else {
-                return reqThenCallback(arguments[0], arguments[1]);
-            }
+            return reqThenCallback(arguments[0], arguments[1]);
         };
 
         guard.request = function (callback) {
